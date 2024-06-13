@@ -1,0 +1,104 @@
+<apex:page recordSetVar="" standardStylesheets="false" standardController="GFERP__GL_Account__c" extensions="MonthEndReconciliationExportExcel_Custom" contentType="application/vnd.ms-excel#MonthEndReconciliation.xls" readOnly="true">
+    <table style="width:100%;">
+        <tr><td>{!CompanyName}</td></tr>
+        <tr><td>Month End Reconciliation</td></tr>
+        <tr><td>Month Ended {!theEndDate}</td></tr>
+    </table>
+    <table style="width:100%;">
+        <tr style="text-align:center; border:1px dotted;">
+            <th></th>
+            <th>OPENING<br/>BALANCE<br/>{!theStartDate}<br/>(A)</th>
+            <th>CHANGES<br/>(B)</th>
+            <th>UNADJUSTED<br/>BALANCE<br/>{!theEndDate}<br/>(C=A+B)</th>
+            <th>LOCAL WAREHOUSE<br/>ACCRUED AP<br/>ADJUSTMENTS<br/>(D)</th>
+            <th>VENDOR WAREHOUSE<br/>ACCRUED AP<br/>ADJUSTMENTS<br/>(E)</th>
+            <th>CUSTOMER WAREHOUSE<br/>ADJUSTMENTS<br/>(F)</th>
+            <th>ADJUSTED<br/>BALANCE<br/>{!theEndDate}<br/>(G=C+D+E+F)</th>
+            <th>SUPPORTING<br/>REPORTS<br/>(H)</th>
+            <th>DIFFERENCE<br/>(I=G-H)</th>
+            <th>GOLDFINCH<br/>CHANGES<br/>(J=B+D+E+F)</th>
+            <th>CHANGES<br/>POSTED IN QB<br/>(K)</th>
+            <th>END OF MONTH<br/>ADJ. ENTRIES<br/>(L=J-K)</th>
+        </tr>
+        <apex:repeat value="{!GLALines}" var="account">
+            <tr style="border:1px dotted;">
+                <td style="text-align:left;">{!account.GLAccount}</td>
+                <td style="text-align:right;{!if(AND(account.openBalance != null, account.openBalance < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.openBalance != null, account.openBalance != 0)}"><apex:param value="{!account.openBalance}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.changes != null, account.changes < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.changes != null, account.changes != 0)}"><apex:param value="{!account.changes}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.unadjustedBalance != null, account.unadjustedBalance < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.unadjustedBalance != null, account.unadjustedBalance != 0)}"><apex:param value="{!account.unadjustedBalance}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.adjustments != null, account.adjustments < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.adjustments != null, account.adjustments != 0)}"><apex:param value="{!account.adjustments}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.adjustmentsVendor!= null, account.adjustmentsVendor< 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.adjustmentsVendor!= null, account.adjustmentsVendor!= 0)}"><apex:param value="{!account.adjustmentsVendor}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.adjustmentsCustomer != null, account.adjustmentsCustomer < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.adjustmentsCustomer!= null, account.adjustmentsCustomer!= 0)}"><apex:param value="{!account.adjustmentsCustomer}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.adjustedBalance != null, account.adjustedBalance < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.adjustedBalance != null, account.adjustedBalance != 0)}"><apex:param value="{!account.adjustedBalance}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.supportingReports != null, account.supportingReports < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.supportingReports != null, account.supportingReports != 0)}"><apex:param value="{!account.supportingReports}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.difference != null, account.difference < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!account.difference}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.GFChanges != null, account.GFChanges < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.GFChanges != null, account.GFChanges != 0)}"><apex:param value="{!account.GFChanges}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.changesPostedInQB != null, account.changesPostedInQB < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.changesPostedInQB != null, account.changesPostedInQB != 0)}"><apex:param value="{!account.changesPostedInQB}"/></apex:outputText>
+                </td>
+                <td style="text-align:right;{!if(AND(account.endOfMonthAdjEntries != null, account.endOfMonthAdjEntries < 0), 'color:Red;','')}">
+                    <apex:outputText value="{0, number, ###,###,##0.00}" rendered="{!AND(account.endOfMonthAdjEntries != null, account.endOfMonthAdjEntries != 0)}"><apex:param value="{!account.endOfMonthAdjEntries}"/></apex:outputText>
+                </td>
+            </tr>
+        </apex:repeat>
+        <tr style="border:1px dotted;">
+            <td style="text-align:right;">Total</td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalOpenBalance}"/></apex:outputText></td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalChanges}"/></apex:outputText></td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalunadjustedBalance}"/></apex:outputText></td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalAdjustmentLocal}"/></apex:outputText></td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalAdjustmentVendor}"/></apex:outputText></td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalAdjustmentCustomer}"/></apex:outputText></td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalAdjustedBalance}"/></apex:outputText></td>
+            <td></td>
+            <td></td> 
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalGFChanges}"/></apex:outputText></td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalChangesPostedInQB}"/></apex:outputText></td>
+            <td><apex:outputText value="{0, number, ###,###,##0.00}"><apex:param value="{!totalEndOfMonthAdjEntries}"/></apex:outputText></td>
+        </tr>
+        <tr style="border:1px dotted;">
+            <td style="text-align:right;">Note.</td>
+            <td colspan="12"></td>
+        </tr>
+        <tr style="border:1px dotted;">
+            <td style="text-align:right;">1</td>
+            <td colspan="12">Adjustment amounts are from FPC Local Inventory As of Date (Expected Cost), FPC Vendor Inventory As of Date (Invoiced Cost), and FPC Customer Warehouse AS of Date (Invoiced Cost).</td>
+        </tr>
+        <tr style="border:1px dotted;">
+            <td style="text-align:right;">2</td>
+            <td colspan="12">Supporting Report for Accounts Receivable is FPC Sales Invoices by Item.</td>
+        </tr>
+        <tr style="border:1px dotted;">
+            <td style="text-align:right;">3</td>
+            <td colspan="12">Supporting Report for Accounts Payable is GF3009 Purchase Invoices List.</td>
+        </tr>
+        <tr style="border:1px dotted;">
+            <td style="text-align:right;">4</td>
+            <td colspan="12">Supporting Report for Inventory is FPC Local Inventory AS of Date.</td>
+        </tr>
+        <tr style="border:1px dotted;">
+            <td style="text-align:right;">5</td>
+            <td colspan="12">Verify that Total row and Difference column are 0.  If yes, use “End of Month Adjustment Entries” column to post a manual entry in QuickBooks to reconcile.</td>
+        </tr>
+    </table>
+</apex:page>

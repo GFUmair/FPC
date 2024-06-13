@@ -1,0 +1,160 @@
+<apex:page contentType="application/vnd.ms-excel#SalesForceExport.xls"
+           controller="ItemAvailabilityStatusController" sidebar="false"
+           readOnly="true" tabStyle="GFERP__Item__c">
+    <head>
+
+    </head>
+
+    <style>
+        .itemRow {
+            background-color: azure;
+        }
+
+        .list td, .list th {
+            text-align: left;
+        }
+
+        .btn, .btnDisabled {
+            padding: 2px 3px !important;
+        }
+
+        .pagination-buttons td {
+            padding-left: 7px;
+        }
+
+        .list td.infodigts {
+            text-align: right;
+        }
+
+        .list th.infodigts {
+            text-align: right;
+        }
+
+        a {
+            text-decoration: underline;
+        }
+
+        .alignRight {
+            text-align: right !important;
+        }
+
+    </style>
+    <h1>
+        Item Availability Status
+    </h1>
+    <table>
+        <tr>
+            <td>
+                Run Date: <apex:outputText value="{0, date, M/d/yyyy}"><apex:param value="{!todaysDate}"/></apex:outputText>
+            </td>
+            <!--<td>{!filterString}</td>-->
+        </tr>
+    </table>
+    <apex:form id="theForm">
+        <apex:pageBlock rendered="{!!hasRecords}">
+            <span style="color:red;">** Record not found **</span>
+        </apex:pageBlock>
+
+        <apex:pageBlock id="thePB" rendered="{!hasRecords}">
+            <table width="100%" border="1" cellspacing="0" cellpadding="3" class="list">
+                <thead>
+                <tr class="headerRow">
+                    <th>Item</th>
+                    <th>UOM</th><!--header for UOM-->
+                    <th>Description</th>
+                    <th>Cost</th>
+                    <th>Price</th>
+                    <th>Brand</th>
+                    <th>Item Category</th>
+                    <th>Preferred Vendor</th>
+                    <th>Local OH(A)</th>
+                    <th>Vendor OH(B)</th>
+                    <th>On SO(C)</th>
+                    <th>On PO(D)</th>
+                    <th>Avail(A+B-C+D)</th>
+                    <th>Customer QOH</th>
+                    <th>Safety(Min)(E)</th>
+                    <th>Variance(A-E)</th>
+                </tr>
+                </thead>
+                <apex:variable value="{!0}" var="num"/>
+                <apex:repeat value="{!lstwItem}" var="wItem">
+                    <tr class="dataRow itemRow">
+                        <td>
+                            {!wItem.theItem.Name}
+                        </td>
+                        <td>{!wItem.theItem.GFERP__Base_Unit_of_Measure__r.Name}</td><!--header for UOM-->
+                        <td>{!wItem.theItem.GFERP__Description__c}</td>
+                        <td>{!wItem.theItem.GFERP__Standard_Base_Cost__c}</td>
+                        <td>{!wItem.theItem.GFERP__Standard_Base_Price__c}</td>
+                        <td>{!wItem.theItem.GFERP__Brand__c}</td>
+                        <td>{!wItem.theItem.GFERP__Item_Category__r.Name}</td>
+                        <td>{!wItem.theItem.GFERP__Vendor__r.Name}</td>
+                        <td class="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.LocalQtyOnHand}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.VendorQtyOnHand}"/>
+                            </apex:outputText>
+                        </td>
+
+                        <td class="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.QtyonSO}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.QtyonPO}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.QtyAvailable}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.CustomerQtyOnHand}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.theItem.GFERP__Safety_Stock__c}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.Variance}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                    <apex:variable var="num" value="{!num+1}"/>
+                </apex:repeat>
+            </table>
+        </apex:pageBlock>
+    </apex:form>
+    <style>
+
+        body {
+            font-size: 12px;
+        }
+
+        #popover-target label {
+            margin: 0 5px;
+            display: block;
+        }
+
+        #popover-target input {
+            margin-right: 5px;
+        }
+
+        #popover-target .disabled {
+            color: #ddd;
+        }
+
+    </style>
+</apex:page>

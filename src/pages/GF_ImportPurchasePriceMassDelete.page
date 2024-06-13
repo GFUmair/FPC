@@ -1,0 +1,20 @@
+<!--
+ - Created by mumair on 5/6/2024.
+ -->
+
+<apex:page id="GF_ImportPurchasePriceMassDelete" recordSetVar="" standardController="Import_Purchase_Price__c" extensions="GF_ImportPurchasePriceController" lightningStylesheets="true">
+    <GFERP:LoadingStatus />
+    <apex:sectionHeader title="Mass Delete Import Purchase Price"/>
+    <apex:form id="theForm">
+        <apex:pageBlock id="thePageBlock" >
+            <apex:outputPanel >
+                <apex:pageMessage severity="info" title="Are you sure you want to delete {!POCount} Import Purchase Price(s)?" rendered="{!errMsg == ''}"/>
+                <apex:pageMessages id="theMessage"></apex:pageMessages>
+            </apex:outputPanel>
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton status="loadingstatus" rendered="{!errMsg == ''}" action="{!massDelete}" rerender="thePageBlock" value="Mass Delete"/>
+                <apex:commandButton value="Return" action="{!returnBack}" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

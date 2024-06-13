@@ -1,0 +1,224 @@
+<apex:page standardController="GFERP__Whse_Shipment__c" extensions="GFERP.PackingSlipPDFController" showHeader="false"
+           applyHtmlTag="false" applyBodyTag="false" standardStylesheets="false" renderAs="pdf">
+    <head>
+        <apex:stylesheet value="{!$Resource.GFERP__PDFStyle}"/>
+        <style>
+            .border_b {
+                border-bottom: 0.5pt solid #000;
+                width: 90%;
+            }
+
+            .header {
+                clear: both;
+                margin-bottom: -20px;
+            }
+        </style>
+    </head>
+
+    <body>
+
+    <!-- HEADER -->
+    <GFERP:PDFComponentAddressNextToLogo section="header" companySetup="{!theCompanySetup}" pdfTitle="PACKING SLIP">
+        <table align="right" class="orderno">
+            <tr>
+                <td>SHIPMENT NO. :</td>
+                <td> {!theWS.Name} </td>
+            </tr>
+            <tr style="display: {!IF(theCompanySetup.GFERP__Allow_Scan_Packing_List__c, '','none')}">
+                <td colspan="2">
+                    <img src="https://www.barcodesinc.com/generator/image.php?code={!theWS.Name}&style=36&type=C128B&width=167&height=50&xres=1&font=3"/>
+                </td>
+            </tr>
+        </table>
+    </GFERP:PDFComponentAddressNextToLogo>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div style="text-align:center;">
+            <span style="font-size:9pt;font-weight:bold;">THANK YOU FOR YOUR BUSINESS!</span>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div style="margin-top: 0px; padding-top: 0px;">
+        <!-- Address Info -->
+        <div class="margin-b-10" style="display: inline-block;">
+            <div id="BillTo">
+                <table width="100%">
+                <!--
+                    <tr>
+                        <td rowspan="6" valign="top" style="font-weight: bold;">BILL<br/>TO</td>
+                    </tr>
+                    <tr>
+                        <td>{!theWS.GFERP__Sales_Order__r.GFERP__Billing_Contact__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theWS.GFERP__Sales_Order__r.GFERP__Bill_to_Customer__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <apex:outputText value="{!theWS.GFERP__Sales_Order__r.GFERP__Billing_Street__c}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <apex:outputText value="{!theWS.GFERP__Sales_Order__r.GFERP__Billing_City__c}"/>
+                            ,&nbsp;
+                            <apex:outputText value="{!theWS.GFERP__Sales_Order__r.GFERP__Billing_State__c}"/>
+                            ,&nbsp;
+                            <apex:outputText value="{!theWS.GFERP__Sales_Order__r.GFERP__Billing_Postal_Code__c}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <apex:outputText value="{!theWS.GFERP__Sales_Order__r.GFERP__Billing_Country__c}"/>
+                        </td>
+                    </tr>
+                    -->
+                </table>
+            </div>
+            <div style="width: 10%; float:left;">
+            </div>
+            <div id="ShipTo">
+                <table width="100%" align="right">
+                    <tr>
+                        <td rowspan="7" valign="top" style="font-weight: bold;">SHIP<br/>TO</td>
+                    </tr>
+                    <tr>
+                        <td>{!theWS.GFERP__Shipping_Contact__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theWS.GFERP__Sell_to_Customer__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theWS.GFERP__Shipping_Street__c}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theWS.GFERP__Shipping_City__c}, {!theWS.GFERP__Shipping_State__c}, {!theWS.GFERP__Shipping_Postal_Code__c}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theWS.GFERP__Shipping_Country__c}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <table id="tblCust" class="tableStyle" cellspacing="0" cellpadding="5" width="100%">
+            <thead>
+            <tr>
+                <th class="border">CUST. PO NO.</th>
+                <th class="border">ACTUAL SHIPMENT DATE</th>
+                <th class="border">SHIPPING AGENT</th>
+                <th class="border">SHIPPING PAYMENT TYPE</th>
+                <th class="border">WAREHOUSE</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td class="border">{!theWS.GFERP__Customer_PO_No__c}</td>
+                <td class="border">
+                    <apex:outputText value="{0,date,M/d/yyyy}">
+                        <apex:param value="{!theWS.GFERP__Actual_Shipment_Date__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="border">{!theWS.GFERP__Shipping_Agent__r.Name}</td>
+                <td class="border">{!theWS.GFERP__Shipping_Payment_Type__c}</td>
+                <td class="border">{!theWS.GFERP__Warehouse__r.Name}</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:15px;">
+            <table id="tblItems" class="tableStyle" cellspacing="0" cellpadding="5" width="100%">
+                <thead>
+                <tr>
+                    <th class="border lalign" width="15%">ITEM</th>
+                    <th class="border lalign" width="27%">DESCRIPTION</th>
+                    <th class="border lalign" width="20%">LOT</th>
+                    <th class="border ralign" width="7%">SHIPPED</th>
+                    <!--<th class="border ralign" width="8%">WEIGHT</th>-->
+                    <th class="border ralign" width="7%">B/O</th>
+                    <th class="border calign" width="7%">UOM</th>
+                    <th class="border calign" width="7%">SKID COUNT</th>
+                    <th class="border calign" width="10%">CROSS DOCK DATE</th>
+                </tr>
+                </thead>
+                <tbody>
+                <apex:repeat var="lineItems" value="{!theWSLList}">
+                    <tr>
+                        <td class="border lalign">{!lineItems.GFERP__Item__r.Name}</td>
+                        <td class="border lalign">{!lineItems.GFERP__Description__c}</td>
+                        <td class="border lalign">
+                            <apex:repeat value="{!lineItems.GFERP__Tracking_Lines__r}" var="trackLine">
+                                {!trackLine.GFERP__Item_Lot__r.Name} : {!trackLine.GFERP__Quantity__c}
+                            </apex:repeat>
+                        </td>
+                        <td class="border ralign">
+                            <apex:outputText value="{0, Number, #,##0.00}">
+                                <apex:param value="{!lineItems.GFERP__Quantity__c}"/>
+                            </apex:outputText>
+                        </td>
+                        <!--
+                        <td class="border ralign">
+                            <apex:outputText value="{0, Number, #,##0.00}">
+                                <apex:param value="{!lineItems.GFERP__Line_Weight__c}"/>
+                            </apex:outputText>
+                        </td>
+                        -->
+                        <td class="border ralign">
+                            <apex:outputText value="{0, Number, #,##0.00}">
+                                <apex:param value="{!lineItems.GFERP__Back_Order_Qty__c}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="border calign">{!lineItems.GFERP__Unit_of_Measure__r.Name}</td>
+                        <td class="border ralign">{!lineItems.Skid_Count__c}</td>
+                        <td class="border calign"><apex:outputField value="{!lineItems.Cross_Dock_Date__c}"/></td>
+                    </tr>
+                    <tr style="display: {!IF(theCompanySetup.GFERP__Allow_Scan_Packing_List__c, '','none')}">
+                        <td class="border lalign" colspan="7" style="padding: 1px 0px 1px 5px;">
+                            <img src="https://www.barcodesinc.com/generator/image.php?code={!lineItems.GFERP__Item__r.Name}&style=36&type=C128B&width=300&height=40&xres=1&font=3"/>
+                        </td>
+                    </tr>
+                </apex:repeat>
+                </tbody>
+            </table>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+
+            <table class="tableStyle2" width="100%" cellspacing="0" cellpadding="15" style="margin-top:30px;">
+                <tr>
+                    <td width="20%">DATE DELIVERED:</td>
+                    <td width="20%">TOTAL QUANTITY:</td>
+                    <td width="30%">SIGNATURE:</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>&nbsp;<div class="border_b"></div>
+                    </td>
+                    <td class="ralign">
+                        <div class="border_b">
+                            <apex:outputText value="{0, Number, #,##0.00}">
+                                <apex:param value="{!totalBox}"/>
+                            </apex:outputText>
+                        </div>
+                    </td>
+                    <td>&nbsp;<div class="border_b"></div>
+                    </td>
+                    <td>
+                    <!--
+                        <div class="border_b">
+                            <apex:outputText value="{0, Number, #,##0.00}">
+                                <apex:param value="{!totalWeight}"/>
+                            </apex:outputText>
+                        </div>
+                        -->
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    </body>
+</apex:page>

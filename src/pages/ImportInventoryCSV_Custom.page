@@ -1,0 +1,44 @@
+<apex:page sidebar="false" recordSetVar="" standardController="GFCON__Import_Inventory2__c" extensions="ImportInventoryUploader_Custom">
+    <apex:form >
+        <apex:sectionHeader title="Upload Data From CSV File"/>
+        <apex:pageBlock >
+            <apex:outputPanel >
+                Please Choose File then Upload:<br/><br/>
+            </apex:outputPanel>
+            <apex:pageMessages id="theMessage" escape="false"></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Return to List" action="{!returnToList}"/>
+            </apex:pageBlockButtons>
+            <left>
+                <apex:inputFile value="{!contentFile}" filename="{!nameFile}"/> <apex:commandButton action="{!SelectFileAndRead}" value="Upload File" id="theButton" style="width:70px;"/>
+            </left>
+
+            <apex:pageblocktable value="{!ImportInventoryList}" var="line" rendered="{!NOT(ISNULL(ImportInventoryList))}">
+                <apex:column headerValue="Warehouse">
+                    <apex:outputField value="{!line.GFCON__Warehouse__c}"/>
+                </apex:column>
+                <apex:column headerValue="Item">
+                    <apex:outputField value="{!line.GFCON__Item__c}"/>
+                </apex:column>
+                <apex:column headerValue="Item Lot">
+                    <apex:outputField value="{!line.GFCON__Item_Lot__c}"/>
+                </apex:column>
+                <apex:column headerValue="Unit of Measure">
+                    <apex:outputField value="{!line.GFCON__Unit_of_Measure__c}"/>
+                </apex:column>
+                <apex:column headerValue="Quantity">
+                    <apex:outputField value="{!line.GFCON__Quantity__c}"/>
+                </apex:column>
+                <apex:column headerValue="Unit Cost">
+                    <apex:outputField value="{!line.GFCON__Unit_Cost__c}"/>
+                </apex:column>
+                <apex:column headerValue="Lot Manufacture Date">
+                    <apex:outputField value="{!line.GFCON__Lot_Manufacture_Date__c}"/>
+                </apex:column>
+                <apex:column headerValue="Lot Expiration Date">
+                    <apex:outputField value="{!line.GFCON__Lot_Expiration_Date__c}"/>
+                </apex:column>
+            </apex:pageblocktable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

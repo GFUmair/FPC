@@ -1,0 +1,309 @@
+<apex:page showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderAs="pdf"
+           standardController="GFERP__Sales_Order__c" extensions="GF_SalesOrderPDF" standardStylesheets="false" action="{!init}">
+    <head>
+        <apex:stylesheet value="{!$Resource.GFERP__PDFStyle}"/>
+    </head>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div style="text-align:center;">
+            <span style="font-size:8pt;">Please remit payment via ACH to {!theSO.GFERP__GL_Ledger__r.Company_Name__c}</span> <br/>
+            <span style="font-size:9pt;font-weight:bold;">THANK YOU FOR YOUR BUSINESS!</span>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+   <!-- <GFERP:PDFComponentAddressNextToLogo section="header" companySetup="{!theCompanySetup}" pdfTitle="{!docTitle}">
+        <table align="right" class="orderno">
+            <tr>
+                <td>ORDER NO :</td>
+                <td> {!theSO.Name}</td>
+            </tr>
+            <tr>
+                <td>ORDER DATE :</td>
+                <td>
+                    <apex:outputText value="{0,date,M/d/yyyy}">
+                        <apex:param value="{!theSO.GFERP__Order_Date__c}"/>
+                    </apex:outputText>
+                </td>
+            </tr>
+        </table>
+    </GFERP:PDFComponentAddressNextToLogo>-->
+     <div class="header">
+        <div id="cmpnyDetails" style="width:55%">
+            <table width="100%">
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>
+                        <apex:outputText escape="false" value="{!IF(theSO.GFERP__GL_Ledger__c != null, theSO.GFERP__GL_Ledger__r.Logo__c,'')}"/>
+                    </td>
+                    <td width="70%;" style="padding-left:10px;">
+                       <apex:outputPanel rendered="{!theSO.GFERP__GL_Ledger__c != null}">
+                           <div class="companyName">{!theSO.GFERP__GL_Ledger__r.Name}</div>
+                            <!--<div class="companyName">{!theSO.GFERP__GL_Ledger__r.Name}</div>-->
+                            <div class="companyAddress">
+                                {!theSO.GFERP__GL_Ledger__r.Street__c}<br/>
+                                {!theSO.GFERP__GL_Ledger__r.City__c}, {!theSO.GFERP__GL_Ledger__r.State__c}&nbsp;{!theSO.GFERP__GL_Ledger__r.Postal_Code__c}
+                            </div>
+                            <div class="companyPhone">
+                                <!--Phone: {!theCompanySetup.GFERP__Customer_Service_Phone__c}-->
+                                 Phone: {!theSO.GFERP__GL_Ledger__r.Phone__c}
+                            </div> 
+                        </apex:outputPanel>
+                        <!-- <apex:outputPanel rendered="{!theDivision == null}">
+                            <div class="companyName">{!theCompanySetup.Name}</div>
+                            <div class="companyAddress">
+                                {!theCompanySetup.GFERP__Company_Street__c}<br/>
+                                {!theCompanySetup.GFERP__Company_City__c}, {!theCompanySetup.GFERP__Company_State__c}&nbsp;{!theCompanySetup.GFERP__Company_Postal_Code__c}
+                            </div>
+                            <div class="companyPhone">
+                                Phone: {!theCompanySetup.GFERP__Customer_Service_Phone__c}
+                            </div>
+                        </apex:outputPanel>-->
+                        <!--<apex:outputPanel rendered="{!theDivision != null}">
+                            <div class="companyName">{!theDivision.Name}</div>
+                            <div class="companyAddress">
+                                {!theDivision.Street__c}<br/>
+                                {!theDivision.City__c}, {!theDivision.State__c}&nbsp;{!theDivision.Postal_Code__c}
+                            </div>
+                            <div class="companyPhone">
+                                Phone: {!theCompanySetup.GFERP__Customer_Service_Phone__c}
+                            </div>
+                        </apex:outputPanel>-->
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="width: 5%; float: left"></div>
+        <div id="orderNoDetails" style="width:40%">
+            <table width="100%">
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="docTitle"> {!docTitle} </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="right">
+                        <div>Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+                    </td>
+<!--                    <td align="right" style="display: {!if(showPalletNo, '', 'none')}">-->
+<!--                        <div>Pallet {!PalletNo} of {!PalletTotal}</div>-->
+<!--                    </td>-->
+                </tr>
+                <tr>
+                    <td>
+                        <table align="right" class="orderno">
+                            <tr>
+                                <td>{!IF(theSO.GFERP__Return_Order__c, 'RMA', 'ORDER')} NO :</td>
+                                <td> {!theSO.Name}</td>
+                            </tr>
+                            <tr>
+                                <td>{!IF(theSO.GFERP__Return_Order__c, 'RMA', 'ORDER')} DATE :</td>
+                                <td>
+                                    <apex:outputText value="{0,date,M/d/yyyy}">
+                                        <apex:param value="{!theSO.GFERP__Order_Date__c}"/>
+                                    </apex:outputText>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- CONTENT -->
+    <div style="text-align: left">
+
+        <div class="margin-b-20" style="display: inline-block;">
+            <div id="BillTo">
+                <table width="100%">
+                    <tr>
+                        <td rowspan="7" valign="top" style="font-weight: bold;">BILL<br/>TO</td>
+                    </tr>
+                    <tr>
+                        <td>{!theSO.GFERP__Billing_Contact__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theSO.GFERP__Bill_to_Customer__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <apex:outputText value="{!theSO.GFERP__Billing_Street__c}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <apex:outputText value="{!theSO.GFERP__Billing_City__c}"/>
+                            ,&nbsp;
+                            <apex:outputText value="{!theSO.GFERP__Billing_State__c}"/>
+                            ,&nbsp;
+                            <apex:outputText value="{!theSO.GFERP__Billing_Postal_Code__c}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <apex:outputText value="{!theSO.GFERP__Billing_Country__c}"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="width: 10%; float:left;">
+            </div>
+            <div id="ShipTo">
+                <table width="100%" align="right">
+                    <tr>
+                        <td rowspan="7" valign="top" style="font-weight: bold;">SHIP<br/>TO</td>
+                    </tr>
+                    <tr>
+                        <td>{!theSO.GFERP__Shipping_Contact__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theSO.GFERP__Sell_to_Customer__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theSO.GFERP__Shipping_Street__c}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theSO.GFERP__Shipping_City__c}, {!theSO.GFERP__Shipping_State__c}, {!theSO.GFERP__Shipping_Postal_Code__c}</td>
+                    </tr>
+                    <tr>
+                        <td>{!theSO.GFERP__Shipping_Country__c}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+
+        <table id="tblCust" class="tableStyle" cellspacing="0" cellpadding="5" width="100%">
+            <thead>
+            <tr>
+                <!--<apex:repeat value="{!$ObjectType.GFERP__Sales_Order__c.fieldSets.SOFieldSet}" var="field">-->
+                    <!--<th class="border">{!if(contains(field.label," Name"),UPPER(LEFT(field.label,LEN(field.label)-5)),UPPER(field.label))}</th>-->
+                <!--</apex:repeat>-->
+                <th class="border">CUST. PO NO.</th>
+                <th class="border">SALES REP</th>
+                <th class="border">SHIPPING AGENT</th>
+                <th class="border">WAREHOUSE</th>
+                <th class="border">SHIPMENT DATE</th>
+                <th class="border">PAYMENT TERMS</th>
+                <!--<th class="border">DUE DATE</th>-->
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <!--<apex:repeat value="{!fields}" var="field">-->
+                <!--<td class="border">-->
+                        <!--<apex:outputText value="{!if(field.type == 'date', '{0,date,M/d/yyyy}', theSO[field])}">-->
+                            <!--<apex:param value="{!theSO[field]}"/>-->
+                        <!--</apex:outputText>-->
+                        <!--<apex:outputField value="{!theSO[field]}"/>-->
+                <!--</td>-->
+                <!--</apex:repeat>-->
+
+                <td class="border">{!theSO.GFERP__Customer_PO_No__c}</td>
+                <td class="border">{!theSO.GFERP__Sales_Rep__r.Name}</td>
+                <td class="border">{!theSO.GFERP__Shipping_Agent__r.Name}</td>
+                <td class="border">{!theSO.GFERP__Warehouse__r.Name}</td>
+                <td class="border">
+                    <apex:outputText value="{0,date,M/d/yyyy}">
+                        <apex:param value="{!theSO.GFERP__Requested_Shipment_Date__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="border">{!theSO.GFERP__Payment_Term__r.Name}</td>
+                <!--<td class="border">
+                        <apex:outputText value="{0,date,M/d/yyyy}" >
+                            <apex:param value="{!theSO.Due_Date__c}"/> 
+                        </apex:outputText>
+                    </td>-->
+            </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:20px;">
+            <table id="tblItems" class="tableStyle" cellspacing="0" cellpadding="5" width="100%">
+                <thead>
+                <tr>
+                    <th class="border lalign" width="15%">ITEM</th>
+                    <th class="border lalign" width="30%">DESCRIPTION</th>
+                    <th class="border ralign" width="10%">QTY</th>
+                    <th class="border lalign" width="10%">UOM</th>
+                    <th class="border ralign" width="10%">UNIT PRICE</th>
+                    
+                    <th class="border ralign" width="15%">LINE AMOUNT</th>
+                </tr>
+                </thead>
+                <tbody>
+                <apex:repeat var="SOLineItems" value="{!theSLList}">
+                    <tr>
+                        <td class="border lalign">{!SOLineItems.GFERP__Item__r.Name}<br/>
+                            {!SOLineItems.GFERP__Unit_of_Measure__r.GFERP__GTIN__c}</td>
+                        <td class="border lalign">{!SOLineItems.GFERP__Description__c}</td>
+                        <td class="border ralign">{!SOLineItems.GFERP__Quantity__c}</td>
+                        <td class="border lalign">{!SOLineItems.GFERP__Unit_of_Measure__r.Name}</td>
+                        <td class="border ralign">{!SOLineItems.GFERP__Unit_Price__c}</td>
+                        
+                        <td class="border ralign">
+                            <apex:outputText value="{0, Number, $#,##0.00}">
+                                <apex:param value="{!SOLineItems.GFERP__Line_Amount__c}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+ 
+                <tr>
+                    <!--<td colspan="1">&nbsp;</td>-->
+                    <!--<td class="specialCol ralign total_td">-->
+                       <!-- TOTAL QTY.-->
+                    <!--</td>-->
+                    <!--<td class="border ralign">-->
+                        <!--<apex:outputText value="{0, Number, #,##0.00}">-->
+                           <!-- <apex:param value="{!totalQty}"/>-->
+                        <!--</apex:outputText>-->
+                    <!--</td>-->
+                    <td colspan="4">&nbsp;</td>
+                    <td class="specialCol ralign total_td">
+                        SUBTOTAL
+                    </td>
+                    <td class="border ralign">
+                        <apex:outputText value="{0, Number, $#,##0.00}">
+                            <apex:param value="{!subtotal}"/>
+                        </apex:outputText>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <table class="tableStyle2" cellspacing="0" cellpadding="5" width="100%">
+                <tr>
+                    <td class="specialCol ralign total_td">
+                        SALES TAX
+                    </td>
+                    <td class="border ralign" width="15%">
+                        <apex:outputText value="{0, Number, $#,##0.00}">
+                            <apex:param value="{!totalTax}"/>
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="specialCol ralign total_td">
+                        TOTAL
+                    </td>
+                    <td class="border ralign">
+                        <apex:outputText value="{0, Number, $#,##0.00}">
+                            <apex:param value="{!totalAmount}"/>
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+</apex:page>

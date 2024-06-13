@@ -1,0 +1,197 @@
+<apex:page showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderAs="pdf"
+           standardController="GFERP__Purchase_Order__c" extensions="GFERP.PurchaseOrderPDF" standardStylesheets="false">
+    <head>
+        <apex:stylesheet value="{!$Resource.GFERP__PDFStyle}"/>
+        <style>
+            
+            .border_b {
+                border-bottom: 0.5pt solid #000;
+                width: 90%;
+            }
+            table tr{
+                page-break-inside: avoid;
+            }
+        </style>
+    </head>
+
+    <!-- HEADER -->
+    <GFERP:PDFComponentAddressNextToLogo section="header" companySetup="{!theCompanySetup}" pdfTitle="PURCHASE ORDER">
+        <table align="right" class="orderno">
+            <tr>
+                <td>ORDER NO :</td>
+                <td> {!thePO.Name}</td>
+            </tr>
+            <tr>
+                <td>ORDER DATE :</td>
+                <td>
+                    <apex:outputText value="{0,date,M/d/yyyy}">
+                        <apex:param value="{!thePO.GFERP__Order_Date__c}"/>
+                    </apex:outputText>
+                </td>
+            </tr>
+        </table>
+    </GFERP:PDFComponentAddressNextToLogo>
+
+    <!-- CONTENT -->
+    <div style="text-align: left">
+
+        <div class="margin-b-20">
+            <table width="100%">
+                <tr>
+                    <td width="45%">
+                        <table width="100%">
+                            <tr>
+                                <td rowspan="6" valign="top" style="font-weight: bold;">BILL<br/>FROM</td>
+                                <td>{!thePO.GFERP__Billing_Contact__r.Name}</td>
+                            </tr>
+                            <tr>
+                                <td>{!thePO.GFERP__Pay_to_Vendor__r.Name}</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <apex:outputText value="{!thePO.GFERP__Billing_Street__c}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <apex:outputText value="{!thePO.GFERP__Billing_City__c}"/>
+                                    ,&nbsp;
+                                    <apex:outputText value="{!thePO.GFERP__Billing_State__c}"/>&nbsp;
+                                    <apex:outputText value="{!thePO.GFERP__Billing_Postal_Code__c}"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <apex:outputText value="{!thePO.GFERP__Billing_Country__c}"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td width="10%"></td>
+                    <td width="45%">
+                        <table align="right" width="100%">
+                            <tr>
+                                <td rowspan="6" valign="top" style="font-weight: bold;">SHIP<br/>TO</td>
+                                <td>{!thePO.GFERP__Shipping_Contact2__r.Name}</td>
+                            </tr>
+                            <tr>
+                                <td>{!shippingName}</td>
+                            </tr>
+                            <tr>
+                                <td>{!thePO.GFERP__Shipping_Street__c}</td>
+                            </tr>
+                            <tr>
+                                <td>{!thePO.GFERP__Shipping_City__c}, {!thePO.GFERP__Shipping_State__c},
+                                    {!thePO.GFERP__Shipping_Postal_Code__c}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>{!thePO.GFERP__Shipping_Country__c}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <table id="tblCust" class="tableStyle" cellspacing="0" cellpadding="5" width="100%">
+            <thead>
+            <tr>
+                <!--<th class="border">HAVE READY DATE</th>-->
+                <!--<th class="border">SHIP DATE</th>-->
+                <th class="border">EXPECTED RECEIPT DATE</th>
+                <th class="border">SHIPPING AGENT</th>
+                <th class="border">PAYMENT TERMS</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <!--
+                <td class="border">
+                    <apex:outputText value="{0,date,M/d/yyyy}">
+                        <apex:param value="{!thePO.Have_Ready_Date__c}"/>
+                    </apex:outputText>
+                </td>
+                <td class="border">
+                    <apex:outputText value="{0,date,M/d/yyyy}">
+                        <apex:param value="{!thePO.Ship_Date__c}"/>
+                    </apex:outputText>
+                </td>
+                -->
+                <td class="border">
+                    <apex:outputText value="{0,date,M/d/yyyy}">
+                        <apex:param value="{!thePO.GFERP__Expected_Receipt_Date__c}"/>
+                    </apex:outputText>
+                </td>
+               
+                <td class="border">{!thePO.GFERP__Shipping_Agent__r.Name}</td>
+                <td class="border">{!thePO.GFERP__Payment_Term__r.Name}</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:20px;">
+            <table id="tblItems" class="tableStyle" cellspacing="0" cellpadding="5" width="100%">
+                <thead>
+                <tr>
+                    <th class="border lalign" width="10%">ITEM</th>
+                    <th class="border lalign" width="30%">DESCRIPTION</th>
+                    <th class="border calign" width="7%">QTY</th>
+                    <th class="border calign" width="7%">UOM</th>
+                    <th class="border calign" width="10%">HAVE<br/>READY<br/>DATE</th>
+                    <th class="border calign" width="10%">SHIP<br/>DATE</th>
+                    <th class="border calign" width="10%">EXPECTED<br/>RECEIPT<br/>DATE</th>
+                    <th class="border ralign" width="8%">UNIT PRICE</th>
+                    <th class="border ralign" width="8%">AMOUNT</th>
+                </tr>
+                </thead>
+                <tbody>
+                <apex:repeat var="line" value="{!thePLList}">
+                    <tr>
+                        <td class="border lalign">{!line.GFERP__Item__r.Name}</td>
+                        <td class="border lalign">{!line.GFERP__Description__c}</td>
+                        <td class="border calign">{!line.GFERP__Quantity__c}</td>
+                        <td class="border calign">{!line.GFERP__Unit_of_Measure__r.Name}</td>
+                        <td class="border calign"><apex:outputField value="{!line.Have_Ready_Date__c}"/></td>
+                        <td class="border calign"><apex:outputField value="{!line.Ship_Date__c}"/></td>
+                        <td class="border calign"><apex:outputField value="{!line.GFERP__Expected_Receipt_Date__c}"/></td>
+                        <td class="border ralign">
+                            <apex:outputText value="{0, Number, $#,##0.00}">
+                                <apex:param value="{!line.GFERP__Unit_Cost__c}"/>
+                            </apex:outputText>
+                        </td>
+                  
+                        <td class="border ralign">
+                            <apex:outputText value="{0, Number, $#,##0.00}">
+                                <apex:param value="{!line.GFERP__Line_Cost__c}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+                <tr>
+                    <td colspan="8" class="specialCol ralign total_td">
+                        TOTAL
+                    </td>
+                    <td class="border ralign">
+                        <apex:outputText value="{0, Number, $#,##0.00}">
+                            <apex:param value="{!totalAmount}"/>
+                        </apex:outputText>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <br/><br/><br/>
+
+            <table width="100%">
+                <tr>
+                    <td width="1%" valign="top">1.</td>
+                    <td width="40%" valign="top" style="padding-bottom:50px;">Please notify us immediately if you are
+                        unable to ship as specified.
+                    </td>
+                    <td colspan="2"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+</apex:page>

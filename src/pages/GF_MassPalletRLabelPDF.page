@@ -1,0 +1,121 @@
+<apex:page recordSetVar="" renderAs="pdf" standardController="GFERP__Whse_Receipt__c" extensions="GF_ReceiptLabelPDFController"
+           showHeader="false" applyHtmlTag="false" applyBodyTag="false" standardStylesheets="false" contentType="application/pdf">
+    <head>
+        <style>
+            body {
+            font-family: "Trebuchet MS", Verdana, sans-serif !important;
+            }
+            
+            .alignCenter {
+            text-align: center;
+            }
+            
+            .divWrap {
+            page-break-before: always;
+            }
+            
+            .divWrap:first-child {
+            page-break-before: avoid!important;
+            }
+            
+            .allergen {
+            font-size: 36px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            }
+            
+            .b {
+            font-weight: bold;
+            }
+            
+            .lotNo, .serialNo {
+            font-size: 19px;
+            }
+            
+            .mt20 {
+            margin-top: 20px;
+            }
+            
+            .mb20 {
+            margin-bottom: 20px;
+            }
+            
+            @page {
+            size: 4in 6in; /* landscape */
+            /* you can also specify margins here: */
+            margin: 5mm;
+            margin-right: 5mm; /* for compatibility with both A4 and Letter */
+            }
+            
+        </style>
+    </head>
+    <apex:repeat value="{!thePLList}" var="lineItem">
+        <apex:repeat value="{!lineItem.GFERP__Pallet_Lines__r}" var="linePL">        
+            <div class="divWrap">
+                <div class="alignCenter">
+                    <!--{!linePL.GFERP__Item_Description__c}-->
+                    <div>
+                        <img src="https://www.webarcode.com/barcode/image.php?code={!lineItem.Name}&style=36&type=C128B&width=350&height=60&xres=1&font=3" style="float: center;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'BarcodesInc', '', 'none')}"/>
+                        <img src="https://barcode.tec-it.com/barcode.ashx?data={!lineItem.Name}&code=Code128&dpi=72" width="250" height="60" style="float: center;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'BarcodeTec', '', 'none')}"/>
+                        <div style="text-align:center;width:100%; margin-left:40px;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'GoldFinch', '', 'none')}">
+							<img src="{!$Label.GoldFinch_Barcode + lineItem.Name}" width="250" height="40" style="float: center;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'GoldFinch', '', 'none')}"/>
+                        </div>
+                        <div style="text-align:left;font-size: 19px; margin-top:-1pt;" > Pallet No: {!lineItem.Name} </div>
+                    </div>
+                </div>
+                <div class="alignCenter">
+                    <!--<div style="padding-top:5pt;">{!linePL.GFERP__Item_Description__c}</div>-->
+                    <div >
+                        <img src="https://www.webarcode.com/barcode/image.php?code={!linePL.GFERP__Item__r.Name}&style=36&type=C128B&width=350&height=60&xres=1&font=3" style="float: center;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'BarcodesInc', '', 'none')}"/>
+                        <img src="https://barcode.tec-it.com/barcode.ashx?data={!linePL.GFERP__Item__r.Name}&code=Code128&dpi=72" width="250" height="60" style="float: center;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'BarcodeTec', '', 'none')}"/>
+                        <div style="text-align:center;width:100%; margin-left:70px;margin-top:13px;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'GoldFinch', '', 'none')}">
+                        	<img src="{!$Label.GoldFinch_Barcode + linePL.GFERP__Item__r.Name}" width="250" height="40" style="float: center;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'GoldFinch', '', 'none')}"/>
+                        </div>
+                        <div style="text-align:left;font-size: 19px;margin-top:-0pt;" > Item No: {!linePL.GFERP__Item__r.Name} </div>
+                    </div>
+                </div>
+                <div class="alignCenter" >
+                    <img src="https://www.webarcode.com/barcode/image.php?code={!linePL.GFERP__Item_Lot__r.Name}&style=36&type=C128B&width=350&height=60&xres=1&font=3" style="display:{!if(AND(linePL.GFERP__Item_Lot__c != null,companySetup.GFERP__Barcode_Generator__c == 'BarcodesInc'), '', 'none')}"/>
+                    <img src="https://barcode.tec-it.com/barcode.ashx?data={!linePL.GFERP__Item_Lot__r.Name}&code=Code128&dpi=72" width="350" height="60" style="display:{!if(AND(linePL.GFERP__Item_Lot__c != null,companySetup.GFERP__Barcode_Generator__c == 'BarcodeTec'), '', 'none')}"/>
+                    <div style="text-align:center;width:100%; margin-left:80px;margin-top:13px;display:{!if(AND(linePL.GFERP__Item_Lot__c != null,companySetup.GFERP__Barcode_Generator__c == 'GoldFinch'), '', 'none')}">
+                      <img src="{!$Label.GoldFinch_Barcode + linePL.GFERP__Item_Lot__r.Name}" width="250" height="40" style="display:{!if(AND(linePL.GFERP__Item_Lot__c != null,companySetup.GFERP__Barcode_Generator__c == 'GoldFinch'), '', 'none')}"/>
+                    </div>
+                </div>
+                <div style="text-align:left;font-size: 19px;margin-top:0pt; display:{!if(linePL.GFERP__Item_Lot__r.Name != null && linePL.GFERP__Item_Lot__r.Name != '', '', 'none')}" > Supplier Lot No: {!linePL.GFERP__Item_Lot__r.Name} </div>
+                
+                <div class="alignCenter" >
+                    <img src="https://www.webarcode.com/barcode/image.php?code={!lineItem.GFERP__Whse_Receipt__r.GFERP__Purchase_Order__r.Name}&style=36&type=C128B&width=350&height=60&xres=1&font=3" style="display:{!if(companySetup.GFERP__Barcode_Generator__c == 'BarcodesInc', '', 'none')}"/>
+                    <img src="https://barcode.tec-it.com/barcode.ashx?data={!lineItem.GFERP__Whse_Receipt__r.GFERP__Purchase_Order__r.Name}&code=Code128&dpi=72" width="350" height="60" style="display:{!if(companySetup.GFERP__Barcode_Generator__c == 'BarcodeTec', '', 'none')}"/>
+                    <div  style="text-align:center;width:100%; margin-left:55px;margin-top:13px;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'GoldFinch', '', 'none')}">
+                     	<img src="{!$Label.GoldFinch_Barcode + lineItem.GFERP__Whse_Receipt__r.GFERP__Purchase_Order__r.Name}" width="250" height="40" style="display:{!if(companySetup.GFERP__Barcode_Generator__c == 'GoldFinch', '', 'none')}"/>
+                    </div>	
+                </div>
+                <div style="text-align:left;font-size: 19px;margin-top:0pt;" > Purchase Order: {!lineItem.GFERP__Whse_Receipt__r.GFERP__Purchase_Order__r.Name} </div>
+                <div class="alignCenter">
+                    <img src="https://www.webarcode.com/barcode/image.php?code={!linePL.GFERP__Quantity__c}&style=36&type=C128B&width=350&height=60&xres=1&font=3" style="display:{!if(companySetup.GFERP__Barcode_Generator__c == 'BarcodesInc', '', 'none')}"/>
+                    <img src="https://barcode.tec-it.com/barcode.ashx?data={!linePL.GFERP__Quantity__c}&code=Code128&dpi=72" width="350" height="60" style="display:{!if(companySetup.GFERP__Barcode_Generator__c == 'BarcodeTec', '', 'none')}"/>
+                    <div style="text-align:center;width:100%; margin-left:80px;margin-top:13px;display:{!if(companySetup.GFERP__Barcode_Generator__c == 'GoldFinch', '', 'none')}" >
+                      <img src="{!$Label.GoldFinch_Barcode + TEXT(linePL.GFERP__Quantity__c)}" width="250" height="40" style="display:{!if(companySetup.GFERP__Barcode_Generator__c == 'GoldFinch', '', 'none')}"/>
+                    </div>
+                </div>
+                <div style="text-align:left;font-size: 19px;margin-top:0pt;" > Total Quantity Received: 
+                    <apex:outputText value="{0, Number, #,##0.00}">
+                        <apex:param value="{!linePL.GFERP__Quantity__c}"/>
+                    </apex:outputText>
+                </div>
+                <div class="mt20">
+                    <table width="100%">
+                        <tr>
+                            <td class="lotNo">Receipt Date:
+                                <apex:outputText value="{0, date, M/d/yyyy}">
+                                    <apex:param value="{!lineItem.GFERP__Whse_Receipt__r.GFERP__Actual_Receipt_Date__c}"/>
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </apex:repeat>
+    </apex:repeat>
+</apex:page>

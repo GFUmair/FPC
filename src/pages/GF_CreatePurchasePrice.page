@@ -1,0 +1,20 @@
+<!--
+ - Created by mumair on 5/6/2024.
+ -->
+
+<apex:page id="GF_CreatePurchasePrice" standardController="Import_Purchase_Price__c" recordSetVar="" extensions="GF_ImportPurchasePriceController" lightningStylesheets="true">
+    <GFERP:LoadingStatus />
+    <apex:sectionHeader title="Import Purchase Price"/>
+    <apex:form id="theForm">
+        <apex:pageBlock id="thePageBlock" >
+            <apex:outputPanel >
+                <apex:pageMessage severity="info" title="Are you sure you want to create {!POCount} Purchase Price(s)?" rendered="{!errMsg == ''}"/>
+            </apex:outputPanel>
+            <apex:pageMessages id="theMessage"></apex:pageMessages>
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Create Purchase Price" action="{!importPurchaseOrder}" rendered="{!errMsg == ''}" status="loadingstatus" reRender="thePageBlock"/>
+                <apex:commandButton value="Return" action="{!returnBack}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,119 @@
+<apex:page controller="InventoryPlanningController" contentType="application/vnd.ms-excel#SalesForceExport.xls" readOnly="true">
+
+    <style>
+        .orangeBG {
+            background-color: orange!important;
+            width: 40px!important;
+        }
+        .yellowBG {
+            background-color: #fff49e!important;
+            width: 40px!important;
+        }
+        .list td, .list th {
+            text-align: left;
+        }
+
+        .alignRight {
+            text-align: right !important;
+        }
+
+    </style>
+    <h1>
+       Inventory Planning Report
+    </h1>
+    <table>
+        <tr>
+            <td>
+                Run Date: <apex:outputText value="{0, date, M/d/yyyy}"><apex:param value="{!todaysDate}"/></apex:outputText>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Reporting Week: <apex:outputText value="{0, date, M/d/yyyy}"><apex:param value="{!reportingDate}"/></apex:outputText>
+            </td>
+        </tr>
+    </table>
+    <apex:form id="theForm">
+        <apex:pageBlock id="thePB" >
+            <table width="100%" border="1" cellspacing="0" cellpadding="3" class="list">
+                <thead>
+                <tr class="headerRow">
+                    <th>Item No.</th>
+                    <th>Description</th>
+                    <th>Begin Count</th>
+                    <th>End Count</th>
+                    <th>Shipped Last Week</th>
+                    <th>Actual Week Usage</th>
+                    <th>Average Week Usage</th>
+                    <th>% Variance</th>
+                    <th>Local On Hand</th>
+                    <th>Local Weeks</th>
+                    <th>Vendor Whse</th>
+                    <th>Local and Vendor Weeks (Actual)</th>
+                    <th>Local and Vendor Weeks (Average)</th>
+                    <th>Total On Hand</th>
+                    <th>On PO</th>
+                    <th>Weeks Avail Total (Actual)</th>
+                    <th>Weeks Avail Total (Average)</th>
+                </tr>
+                </thead>
+                <apex:repeat value="{!itemLineList}" var="itemLine">
+                    <tr class="dataRow itemRow">
+                        <td>
+                            {!itemLine.itemNo}
+                        </td>
+                        <td>{!itemLine.itemDescription}</td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.beginCount}"/>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.endCount}"/>
+                        </td>
+
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.shippedLastWeek}"/>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.actualWkUsage}"/>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.averageWkUsage}"/>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{0, number, 0%}" styleClass="{!itemLine.textColorClass}" >
+                                <apex:param value="{!itemLine.variancePct}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.localOnHand}"/>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.localWeeks}"/>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.vendorWhse}"/>
+                        </td>
+                        <td style="{!if(itemLine.localAndVendorWksActual != null, if(itemLine.localAndVendorWksActual < 4.0, 'background-color: orange;', if(AND(itemLine.localAndVendorWksActual >= 4, itemLine.localAndVendorWksActual <= 12),'background-color: #fff49e;','')), '')}">
+                            <apex:outputText value="{!itemLine.localAndVendorWksActual}"/>
+                        </td>
+                        <td style="{!if(itemLine.localAndVendorWksStandard != null, if(itemLine.localAndVendorWksStandard < 4.0, 'background-color: orange;', if(AND(itemLine.localAndVendorWksStandard >= 4, itemLine.localAndVendorWksStandard <= 12),'background-color: #fff49e;','')), '')}">
+                            <apex:outputText value="{!itemLine.localAndVendorWksStandard}"/>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.totalOnHand}"/>
+                        </td>
+                        <td class="alignRight">
+                            <apex:outputText value="{!itemLine.onOrder}"/>
+                        </td>
+                        <td style="{!if(itemLine.weeksAvailTotalAcutal != null, if(itemLine.weeksAvailTotalAcutal < 4.0, 'background-color: orange;', if(AND(itemLine.weeksAvailTotalAcutal >= 4, itemLine.weeksAvailTotalAcutal <= 12),'background-color: #fff49e;','')), '')}">
+                            <apex:outputText value="{!itemLine.weeksAvailTotalAcutal}"/>
+                        </td>
+                        <td style="{!if(itemLine.weeksAvailTotalStandard != null, if(itemLine.weeksAvailTotalStandard < 4.0, 'background-color: orange;', if(AND(itemLine.weeksAvailTotalStandard >= 4, itemLine.weeksAvailTotalStandard <= 12),'background-color: #fff49e;','')), '')}">
+                            <apex:outputText value="{!itemLine.weeksAvailTotalStandard}"/>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

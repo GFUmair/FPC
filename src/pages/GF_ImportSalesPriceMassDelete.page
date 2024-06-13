@@ -1,0 +1,13 @@
+<apex:page id="GF_ImportSalesPriceMassDelete" recordSetVar="" standardController="Import_Sales_Prices__c" extensions="GF_ImportSalesPriceController" lightningStylesheets="true">
+    <GFERP:LoadingStatus />
+    <apex:sectionHeader title="Mass Delete Import Sales Prices"/>
+    <apex:form id="theForm">
+        <apex:pageBlock id="thePageBlock" >
+            <apex:pageMessages id="theMessage"></apex:pageMessages>
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Mass Delete" status="loadingstatus" action="{!massDelete}" rerender="thePageBlock" />
+                <apex:commandButton value="Return" action="{!returnBack}" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

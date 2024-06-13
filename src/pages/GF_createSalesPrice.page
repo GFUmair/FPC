@@ -1,0 +1,16 @@
+<apex:page recordSetVar="" standardController="Import_Sales_Prices__c" extensions="GF_ImportSalesPriceController" lightningStylesheets="true">
+    <GFERP:LoadingStatus />
+    <apex:sectionHeader title="Create Sales Price From Import Sales Price"/>
+    <apex:form id="theForm">
+        <apex:pageBlock id="thePageBlock" >
+            <apex:outputPanel >
+                Please review important messages below before you continue:<br/><br/>
+            </apex:outputPanel>
+            <apex:pageMessages id="theMessage" escape="false"></apex:pageMessages>
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton status="loadingstatus"  action="{!createSP}" rerender="thePageBlock" value="Create Sales Price"/>
+                <apex:commandButton value="Return Import Sales Price" action="{!returnBack}" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,23 @@
+<!--
+ - Created by mumair on 5/6/2024.
+ -->
+
+<apex:page id="GF_ImportPurchasePrice" sideBar="false" recordSetVar="" standardController="Import_Purchase_Price__c" extensions="GF_ImportPurchasePriceUploader" lightningStylesheets="true">
+    <GFERP:LoadingStatus />
+    <apex:form >
+        <apex:sectionHeader title="Upload Data From CSV File"/>
+        <apex:pageBlock >
+            <apex:outputPanel >
+                Please Choose File then Upload:<br/><br/>
+            </apex:outputPanel>
+            <apex:pageMessages id="theMessage"></apex:pageMessages>
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Return to List" action="{!returnToList}"/>
+            </apex:pageBlockButtons>
+            <left>
+                <apex:inputFile value="{!contentFile}" filename="{!nameFile}"/>
+                <apex:commandButton action="{!SelectFileAndRead2}" value="Upload File" id="theButton" style="width:100px;"/>
+            </left>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

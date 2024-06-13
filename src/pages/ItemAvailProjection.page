@@ -1,0 +1,467 @@
+<apex:page standardController="GFERP__Item__c" extensions="ItemAvailabilityStatusController" recordSetVar="" sidebar="false"
+           readOnly="true" tabStyle="GFERP__Item__c" docType="html-5.0">
+    <GFERP:LoadingStatus />
+    <head>
+        <script>
+            function getData(id, func) {
+                console.log('id==>' + id);
+                console.log('func==>' + func);
+                if (func == 'LocalQIH') getLocalQTYinfo(id, func);
+                else if (func == 'QPO') getQPOinfo(id, func);
+                else if (func == 'QSO') getQSOinfo(id, func);
+                else if (func == 'CustomerQIH') getCustomerQTYinfo(id, func);
+                else if (func == 'VendorQIH') getVendorQTYinfo(id, func);
+            }
+
+            function openModal(){
+                var modal = document.getElementById("myModal");
+                var closeIcon = document.getElementsByClassName("close")[0];
+                var closeBtn = document.getElementsByClassName("close")[1];
+
+                // When the user clicks the button, open the modal
+                modal.style.display = "block";
+                // When the user clicks on (x) or close button, close the modal
+                closeIcon.onclick = function() {
+                    modal.style.display = "none";
+                }
+                closeBtn.onclick = function() {
+                    modal.style.display = "none";
+                }
+            }
+        </script>
+    </head>
+
+    <style>
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 9999; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        /* Modal Content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 85%;
+            border-radius: 5px;
+        }
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        a {
+            text-decoration: underline;
+        }
+        .alignRight {
+            text-align: right !important;
+        }
+
+        .itemsLineWrap table { border-collapse: separate; width: 100%; }
+        .itemsLineWrap th, td { padding: 8px 16px; }
+
+        .itemsLineWrap {
+            overflow: auto;
+            height: 490px;
+        }
+
+        .itemsLineWrap thead .headerRow th {
+            position: sticky;
+            top: 31px;
+        }
+        .itemsLineWrap thead th {
+            position: sticky;
+            top: 0px;
+            background: white;
+        }
+
+    </style>
+    <apex:sectionHeader title="FPC Item Availability Status"/>
+    <apex:form id="theForm">
+
+        <apex:pageBlock >
+            <apex:outputPanel id="popinfo">
+                <div id="myModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <span class="close">&times;</span>
+                            <h5 class="modal-title-success">
+                                <apex:outputLabel rendered="{!method=='LocalQIH'}"> Local Qty. on Hand Details</apex:outputLabel>
+                                <apex:outputLabel rendered="{!method=='VendorQIH'}"> Vendor Qty. on Hand Details</apex:outputLabel>
+                                <apex:outputLabel rendered="{!method=='CustomerQIH'}"> Customer Qty. on Hand Details</apex:outputLabel>
+                                <apex:outputLabel rendered="{!method=='QPO'}"> Qty. on Purchase Orders Details</apex:outputLabel>
+                                <apex:outputLabel rendered="{!method=='QSO'}"> Qty. on Sales Orders Details</apex:outputLabel>
+                            </h5>
+                        </div>
+                        <div class="modal-body">
+                            <p>
+                                <apex:outputPanel rendered="{!method=='LocalQIH'}">
+                                    <apex:pageBlock mode="{!IF((BC.size != 0),'maindetail','detail')}">
+                                        <apex:pageBlockTable value="{!BC}" var="u" id="userFields"
+                                                             rendered="{!(BC.size != 0)}">
+                                            <apex:column headervalue="Bin Content">
+                                                <apex:outputLink value="/{!u.id}" id="theLink"
+                                                                 target="_blank">{!u.Name}
+                                                </apex:outputLink>
+                                            </apex:column>
+                                            <apex:column headervalue="Bin">
+                                                <apex:outputLink value="/{!u.GFERP__Bin__c}" id="theBinLink"
+                                                                 target="_blank">{!u.GFERP__Bin__r.Name}
+                                                </apex:outputLink>
+                                            </apex:column>
+                                            <apex:column value="{!u.GFERP__Quantity__c}"/>
+                                            <apex:column headerValue="UOM" value="{!u.GFERP__Unit_of_Measure__r.Name}"/>
+                                            <apex:column value="{!u.GFERP__Qty_Base__c}"/>
+                                            <apex:column headerValue="Warehouse" value="{!u.GFERP__Warehouse__r.NAME}"/>
+                                        </apex:pageBlockTable>
+                                        <apex:outputText rendered="{!(BC.size = 0)}" value="No Records Found."
+                                                         style="font-size: 105%;"/>
+                                    </apex:pageBlock>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!method=='VendorQIH'}">
+                                    <apex:pageBlock mode="{!IF((BC.size != 0),'maindetail','detail')}">
+                                        <apex:pageBlockTable value="{!BC}" var="u" id="userFields"
+                                                             rendered="{!(BC.size != 0)}">
+                                            <apex:column headervalue="Bin Content">
+                                                <apex:outputLink value="/{!u.id}" id="theLink"
+                                                                 target="_blank">{!u.Name}
+                                                </apex:outputLink>
+                                            </apex:column>
+                                            <apex:column headervalue="Bin">
+                                                <apex:outputLink value="/{!u.GFERP__Bin__c}" id="theBinLink"
+                                                                 target="_blank">{!u.GFERP__Bin__r.Name}
+                                                </apex:outputLink>
+                                            </apex:column>
+                                            <apex:column value="{!u.GFERP__Quantity__c}"/>
+                                            <apex:column headerValue="UOM" value="{!u.GFERP__Unit_of_Measure__r.Name}"/>
+                                            <apex:column value="{!u.GFERP__Qty_Base__c}"/>
+                                            <apex:column headerValue="Warehouse" value="{!u.GFERP__Warehouse__R.NAME}"/>
+                                        </apex:pageBlockTable>
+                                        <apex:outputText rendered="{!(BC.size = 0)}" value="No Records Found."
+                                                         style="font-size: 105%;"/>
+                                    </apex:pageBlock>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!method=='CustomerQIH'}">
+                                    <apex:pageBlock mode="{!IF((CIC.size != 0),'maindetail','detail')}">
+                                        <apex:pageBlockTable value="{!CIC}" var="u" id="userFields"
+                                                             rendered="{!(BC.size != 0)}">
+                                            <apex:column headervalue="Customer Inventory Count">
+                                                <apex:outputLink value="/{!u.id}" id="theLink"
+                                                                 target="_blank">{!u.Name}
+                                                </apex:outputLink>
+                                            </apex:column>
+                                            <apex:column headervalue="Item No.">
+                                                <apex:outputLink value="/{!u.Item_No__c}" id="theBinLink"
+                                                                 target="_blank">{!u.Item_No__r.Name}
+                                                </apex:outputLink>
+                                            </apex:column>
+                                            <apex:column headerValue="Count Qty." value="{!u.Count_Qty__c}"/>
+                                            <apex:column headerValue="Previous Count Qty" value="{!u.Previous_Count_Qty__c}"/>
+                                            <apex:column headerValue="Week End Date" value="{!u.Week_End_Date__c}"/>
+                                            <apex:column headerValue="Last Week End Date" value="{!u.Last_Week_End_Date__c}"/>
+                                        
+                                        </apex:pageBlockTable>
+                                        <apex:outputText rendered="{!(BC.size = 0)}" value="No Records Found."
+                                                         style="font-size: 105%;"/>
+                                    </apex:pageBlock>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel rendered="{!method=='QPO'}">
+                                    <apex:pageBlock mode="{!IF((QPO.size != 0),'maindetail','detail')}">
+                                        <apex:pageBlockTable value="{!QPO}" var="u" id="userFields"
+                                                             rendered="{!(QPO.size != 0)}">
+                                            <apex:column headervalue="Name">
+                                                <apex:outputLink value="/{!u.GFERP__Purchase_Order__c}" id="theLink"
+                                                                 target="_blank">{!u.GFERP__Purchase_Order__r.Name}
+                                                </apex:outputLink>
+                                            </apex:column>
+                                            <apex:column value="{!u.GFERP__Vendor__c}"/>
+                                            <apex:column value="{!u.GFERP__Outstanding_Qty__c}"/>
+                                            <apex:column value="{!u.GFERP__Unit_of_Measure__r.name}"/>
+                                            <apex:column value="{!u.GFERP__O_S_Qty_Base__c}" />
+                                            <apex:column value="{!u.GFERP__Expected_Receipt_Date__c}"/>
+                                        </apex:pageBlockTable>
+                                        <apex:outputText rendered="{!(QPO.size = 0)}" value="No Records Found."
+                                                         style="font-size: 105%;"/>
+                                    </apex:pageBlock>
+                                </apex:outputPanel>
+
+                                <apex:outputPanel rendered="{!method=='QSO'}">
+                                    <apex:pageBlock mode="{!IF((QSO.size != 0),'maindetail','detail')}">
+                                        <apex:pageBlockTable value="{!QSO}" var="u" id="userFields"
+                                                             rendered="{!(QSO.size != 0)}">
+                                            <apex:column headervalue="Name">
+                                                <apex:outputLink value="/{!u.GFERP__Sales_Order__c}" id="theLink"
+                                                                 target="_blank">{!u.GFERP__Sales_Order__r.Name}
+                                                </apex:outputLink>
+                                            </apex:column>
+                                            <apex:column value="{!u.GFERP__Sell_to_Customer__c}"/>
+                                            <apex:column value="{!u.GFERP__Outstanding_Qty__c}"/>
+                                            <apex:column value="{!u.GFERP__Unit_of_Measure__r.name}"/>
+                                            <apex:column value="{!u.GFERP__O_S_Qty_Base__c}"/>
+                                            <apex:column value="{!u.GFERP__Shipment_Date__c}"/>
+                                        </apex:pageBlockTable>
+                                        <apex:outputText rendered="{!(QSO.size = 0)}" value="No Records Found." style="font-size: 105%;"/>
+                                    </apex:pageBlock>
+                                </apex:outputPanel>
+
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </apex:outputPanel>
+
+            <apex:pageMessages id="theMsg"/>
+            <apex:pageBlockSection columns="1">
+                <apex:panelGrid columns="4">
+                    <apex:outputPanel style="white-space:nowrap;">
+                        <b>Filter : </b>
+                        <apex:selectList size="1" value="{!selFilterField}">
+                            <apex:selectOptions value="{!lstFilterField}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!selFilterOp}">
+                            <apex:selectOptions value="{!lstFilterOperator}"/>
+                        </apex:selectList>
+                        <apex:inputText value="{!filterInput}"/>
+                    </apex:outputPanel>
+                    <apex:outputPanel style="white-space:nowrap;">
+                        <apex:selectList size="1" value="{!selFilterField2}">
+                            <apex:selectOptions value="{!lstFilterField2}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!selFilterOp2}">
+                            <apex:selectOptions value="{!lstFilterOperator2}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!filterInput2}" style="max-width:150px;">
+                            <apex:selectOptions value="{!lstfilterInput2}"/>
+                        </apex:selectList>
+                    </apex:outputPanel>
+                    <apex:outputPanel style="white-space:nowrap;">
+                        <apex:selectList size="1" value="{!selFilterField6}">
+                            <apex:selectOptions value="{!lstFilterField6}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!selFilterOp6}">
+                            <apex:selectOptions value="{!lstFilterOperator6}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!filterInput6}" style="max-width:150px;">
+                            <apex:selectOptions value="{!lstfilterInput6}"/>
+                        </apex:selectList>
+                    </apex:outputPanel>
+                    <apex:outputPanel style="white-space:nowrap;">
+                        <apex:selectList size="1" value="{!selFilterField3}">
+                            <apex:selectOptions value="{!lstFilterField3}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!selFilterOp3}">
+                            <apex:selectOptions value="{!lstFilterOperator3}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!filterInput3}" style="max-width:150px;">
+                            <apex:selectOptions value="{!lstfilterInput3}"/>
+                        </apex:selectList>
+                    </apex:outputPanel>
+                    <apex:outputPanel style="white-space:nowrap;">
+                        <apex:selectList size="1" value="{!selFilterField4}">
+                            <apex:selectOptions value="{!lstFilterField4}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!selFilterOp4}">
+                            <apex:selectOptions value="{!lstFilterOperator4}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!filterInput4}" style="max-width:150px;">
+                            <apex:selectOptions value="{!lstfilterInput4}"/>
+                        </apex:selectList>
+                    </apex:outputPanel>
+                    <apex:outputPanel style="white-space:nowrap;">
+                        <apex:selectList size="1" value="{!selFilterField5}">
+                            <apex:selectOptions value="{!lstFilterField5}"/>
+                        </apex:selectList>
+                        <apex:selectList size="1" value="{!selFilterOp5}">
+                            <apex:selectOptions value="{!lstFilterOperator5}"/>
+                        </apex:selectList>
+                        <apex:inputText value="{!filterInput5}" onKeyPress="return ((event.charCode >= 46 && event.charCode <= 57) || event.charCode == 13)"/>
+                    </apex:outputPanel>
+                    <apex:outputPanel >
+                        <b>On Hand As Of Date :&nbsp; </b>
+                        <apex:input type="date" value="{!onHandAsOfDate}"/>
+                    </apex:outputPanel>
+
+                </apex:panelGrid>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockSection collapsible="true" id="theItemTable" columns="1">
+                <apex:outputPanel styleClass="itemsLineWrap" layout="block">
+                    <apex:pageBlockTable id="theSelectedWRLTable" value="{!lstwItem}" var="wItem" rendered="{!NOT(ISNULL(lstwItem))}" style="width:100%;">
+
+                        <apex:column headerValue="Item">
+                            <apex:outputLink value="/{!wItem.theItem.Id}" id="ItemName"
+                                             target="_blank">{!wItem.theItem.Name}
+                                </apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="UOM">
+                            <apex:outputText value="{!wItem.theItem.GFERP__Base_Unit_of_Measure__r.Name}"/>
+                        </apex:column>
+                        <apex:column headerValue="Description">
+                            <apex:outputText value="{!wItem.theItem.GFERP__Description__c}"/>
+                        </apex:column>
+                        <apex:column headerValue="Cost">
+                            <apex:outputText value="{!wItem.theItem.GFERP__Standard_Base_Cost__c}"/>
+                        </apex:column>
+                        <apex:column headerValue="Price">
+                            <apex:outputText value="{!wItem.theItem.GFERP__Standard_Base_Price__c}"/>
+                        </apex:column>
+                        <apex:column headerValue="Brand">
+                            <apex:outputText value="{!wItem.theItem.GFERP__Brand__c}"/>
+                        </apex:column>
+                        <apex:column headerValue="Item Category">
+                            <apex:outputText value="{!wItem.theItem.GFERP__Item_Category__r.Name}"/>
+                        </apex:column>
+                        <apex:column headerValue="Preferred Vendor">
+                            <apex:outputText value="{!wItem.theItem.GFERP__Vendor__r.Name}"/>
+                        </apex:column>
+                        <apex:column headerValue="Local OH(A)" styleClass="alignRight" headerClass="alignRight">
+                            <apex:outputLink onclick="getData('{!wItem.theItem.Id}','LocalQIH');return false;"
+                                             id="LocalUM">
+                                <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                    <apex:param value="{!wItem.LocalQtyOnHand}"/>
+                                </apex:outputText>
+                            </apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Vendor OH(B)" styleClass="alignRight" headerClass="alignRight">
+                            <apex:outputLink onclick="getData('{!wItem.theItem.Id}','VendorQIH');return false;"
+                                             id="VendorUM">
+                                <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                    <apex:param value="{!wItem.VendorQtyOnHand}"/>
+                                </apex:outputText>
+                            </apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="On SO(C)" styleClass="alignRight" headerClass="alignRight">
+                            <apex:outputLink onclick="getData('{!wItem.theItem.Id}','QSO');return false;"
+                                             id="QSO">
+                                <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                    <apex:param value="{!wItem.QtyonSO}"/>
+                                </apex:outputText>
+                            </apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="On PO(D)" styleClass="alignRight" headerClass="alignRight">
+                            <apex:outputLink onclick="getData('{!wItem.theItem.Id}','QPO');return false;"
+                                             id="QPO">
+                                <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                    <apex:param value="{!wItem.QtyonPO}"/>
+                                </apex:outputText>
+                            </apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Avail(A+B-C+D)" styleClass="alignRight" headerClass="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.QtyAvailable}"/>
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:column headerValue="Customer OH" styleClass="alignRight" headerClass="alignRight">
+                            <apex:outputLink onclick="getData('{!wItem.theItem.Id}','CustomerQIH');return false;"
+                                             id="CUM">
+                                <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                    <apex:param value="{!wItem.CustomerQtyOnHand}"/>
+                                </apex:outputText>
+                            </apex:outputLink>
+                        </apex:column>
+                        <apex:column headerValue="Safety(Min)(E)" styleClass="alignRight" headerClass="alignRight">
+                            <apex:outputText value="{!wItem.theItem.GFERP__Safety_Stock__c}"/>
+                        </apex:column>
+                        <apex:column headerValue="Variance(A-E)" styleClass="alignRight" headerClass="alignRight">
+                            <apex:outputText styleClass="removeSpace" value="{0, Number, #,##0.00}">
+                                <apex:param value="{!wItem.Variance}"/>
+                            </apex:outputText>
+                        </apex:column>
+                        <apex:facet name="header">
+                            <apex:outputPanel >
+
+                                <apex:outputLabel value=" Per Page " for="perpagelist"/>
+                                <apex:selectList value="{!PageSize}" size="1" id="perpagelist">
+                                    <apex:selectOptions value="{!pageSizeSelectOptions}"/>
+                                    <apex:actionSupport event="onchange" reRender="theItemTable" action="{!resetPageSize}" status="loadingstatus"/>
+                                </apex:selectList>
+
+                                <apex:outputLabel value="Sort By " for="sortbylist" style="margin-left:15px;"/>
+                                <apex:selectList value="{!sortExp}" size="1" id="sortbylist">
+                                    <apex:selectOptions value="{!SortBySelectOptionsOptions}"/>
+                                    <apex:actionSupport event="onchange" action="{!search}" reRender="theItemTable" status="loadingstatus"/>
+                                </apex:selectList>
+
+                                <apex:commandLink action="{!search}" title="Sort Direction" value="{!IF(sortDirection='ASC','▲','▼')}"
+                                                  reRender="theItemTable" status="loadingstatus" id="sortDirection" style="margin-left:8px;text-decoration: none;font-size:14px;margin-right:15px;">
+                                    <apex:param value="" name="sortDirection" assignTo="{!sortExpression}"></apex:param>
+                                </apex:commandLink>
+
+                                <apex:commandButton value="Update Report" action="{!Search}" rerender="theMsg,theForm" status="loadingstatus">
+                                    <apex:param id="theSearch" name="theSearch" value="Item"/>
+                                </apex:commandButton>
+                                <apex:commandButton value="Export to Excel" action="{!ExportToExcel}" rerender="theMsg,theForm">
+                                </apex:commandButton>
+
+                                <apex:outputPanel style="float:right;">
+                                    <apex:commandButton action="{!first}" disabled="{!!hasPrevious}" value="|<< First" status="loadingstatus" reRender="theItemTable"/>
+                                    <apex:commandButton action="{!previous}" disabled="{!!hasPrevious}" value="<< Previous" status="loadingstatus" reRender="theItemTable"/>
+                                    <apex:commandButton action="{!next}" disabled="{!!hasNext}" value="Next >>" status="loadingstatus" reRender="theItemTable"/>
+                                    <apex:commandButton action="{!last}" disabled="{!!hasNext}" value="Last >>|" status="loadingstatus" reRender="theItemTable"/>
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                        </apex:facet>
+                        <apex:facet name="footer">
+                            <apex:outputPanel >
+                                <apex:outputText value="{!paginationStat}"/>
+                                <apex:outputPanel style="float:right;">
+                                    <apex:commandButton action="{!first}" disabled="{!!hasPrevious}" value="|<< First" status="loadingstatus" reRender="theItemTable"/>
+                                    <apex:commandButton action="{!previous}" disabled="{!!hasPrevious}" value="<< Previous" status="loadingstatus" reRender="theItemTable"/>
+                                    <apex:commandButton action="{!next}" disabled="{!!hasNext}" value="Next >>" status="loadingstatus" reRender="theItemTable"/>
+                                    <apex:commandButton action="{!last}" disabled="{!!hasNext}" value="Last >>|" status="loadingstatus" reRender="theItemTable"/>
+                                </apex:outputPanel>
+                            </apex:outputPanel>
+                        </apex:facet>
+                    </apex:pageBlockTable>
+                </apex:outputPanel>
+            </apex:pageBlockSection>
+
+        </apex:pageBlock>
+        <!--Action functions for -->
+        <apex:actionFunction name="Infoby" action="{!Infoby}" rerender="theMsg,theForm" status="loadingstatus"/>
+        <apex:actionFunction name="getLocalQTYinfo" action="{!getLocalQTYinfo}" rerender="popinfo" status="loadingstatus"
+                             oncomplete="openModal();">
+            <apex:param id="LItemIdQIH" assignTo="{!ItemId}" name="ItemId" value=""/>
+            <apex:param id="LmethodQIH" assignTo="{!method}" name="method" value=""/>
+        </apex:actionFunction>
+        <apex:actionFunction name="getVendorQTYinfo" action="{!getVendorQTYinfo}" rerender="popinfo" status="loadingstatus"
+                             oncomplete="openModal();">
+            <apex:param id="VItemIdQIH" assignTo="{!ItemId}" name="ItemId" value=""/>
+            <apex:param id="VmethodQIH" assignTo="{!method}" name="method" value=""/>
+        </apex:actionFunction>
+        <apex:actionFunction name="getCustomerQTYinfo" action="{!getCustomerQTYinfo}" rerender="popinfo" status="loadingstatus"
+                             oncomplete="openModal();">
+            <apex:param id="CItemIdQIH" assignTo="{!ItemId}" name="ItemId" value=""/>
+            <apex:param id="CmethodQIH" assignTo="{!method}" name="method" value=""/>
+        </apex:actionFunction>
+
+        <apex:actionFunction name="getQPOinfo" action="{!getQPOinfo}" rerender="popinfo" status="loadingstatus"
+                             oncomplete="openModal();">
+            <apex:param id="ItemIdQPO" assignTo="{!ItemId}" name="ItemId" value=""/>
+            <apex:param id="methodQPO" assignTo="{!method}" name="method" value=""/>
+        </apex:actionFunction>
+        <apex:actionFunction name="getQSOinfo" action="{!getQSOinfo}" rerender="popinfo" status="loadingstatus"
+                             oncomplete="openModal();">
+            <apex:param id="ItemIdQSO" assignTo="{!ItemId}" name="ItemId" value=""/>
+            <apex:param id="methodQSO" assignTo="{!method}" name="method" value=""/>
+        </apex:actionFunction>
+    </apex:form>
+</apex:page>

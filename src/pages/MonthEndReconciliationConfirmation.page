@@ -1,0 +1,44 @@
+<apex:page id="thePage" recordSetVar="" standardController="GFERP__GL_Account__c" extensions="MonthEndReconciliationExportExcel_Custom" lightningStylesheets="true">
+    <style>
+        /*center top and bottom buttons*/
+        .pbHeader .pbTitle, .pbBottomButtons .pbTitle {
+            display: none!important;
+        }
+        .pbHeader .pbButton, .pbBottomButtons .pbButtonb  {
+            text-align: center!important;
+        }
+        .dateFormat {
+            display: none;
+        }
+    </style>
+    <script type="text/javascript">
+        function exportExcel(noError) {
+            if (noError == true || noError == 'true') {
+                var theField = document.getElementById('thePage:theForm:thePageBlock:theSection:theItem:theEndDate');
+                var theValue = theField.value;
+                if (theValue != null && theValue != '') {
+                    window.open("/apex/MonthEndReconciliationExportExcel?endDate="+theValue, '_blank');
+                } else {
+                    alert('Please select a month end date');
+                }
+            }
+        }
+    </script>
+    <GFERP:LoadingStatus />
+    <apex:sectionHeader title="Month End Reconciliation Export as Excel"/>
+    <apex:form id="theForm">
+        <apex:pageBlock id="thePageBlock" >
+            <apex:pageBlockSection id="theSection">
+                <apex:pageBlockSectionItem id="theItem">
+                    <apex:outputLabel >Month End Date</apex:outputLabel>
+                    <apex:inputField value="{!theISO.GFCON__Requested_Delivery_Date__c}" id="theEndDate"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageMessages id="theMessage"></apex:pageMessages>
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Export" action="{!selectAccountSalesAndCOGS}" reRender="thePageBlock" onComplete="exportExcel({!noError})"/>
+                <apex:commandButton value="Return" action="{!returnBackToList}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

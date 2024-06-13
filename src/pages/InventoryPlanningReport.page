@@ -1,0 +1,401 @@
+<apex:page recordSetVar="" standardController="GFERP__Item__c" extensions="InventoryPlanningController" title="Inventory Planning Report" readOnly="true">
+    <head>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    </head>
+    <style>
+        .orangeBG {
+            background: orange!important;
+            width: 40px!important;
+        }
+        .yellowBG {
+            background: #fff49e!important;
+            width: 40px!important;
+        }
+        .blueFont {
+            color: darkblue!important;
+        }
+        .yellowFont {
+            color: #edb51c!important;
+        }
+        .redFont {
+            color: red!important;
+        }
+        .guideTable tbody{
+            display: none;
+        }
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+        }
+        /* Modal Content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 60%;
+            border-radius: 5px;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 101px;
+            right: 21%;
+            background-color: white;
+            border: none;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            display: block;
+            height: 30px;
+        }
+
+        .modal-footer a {
+            padding: 8px 12px;
+            text-decoration: none;
+            background: #fafafa;
+            border: 1px solid #c2c2c2;
+            border-radius: 4px;
+            color: #1b5297;
+            font-size: 12px;
+            float: right;
+        }
+
+        .modal-footer a:hover {
+            text-decoration: none;
+            background-color: #eee;
+            cursor: pointer;
+        }
+    </style>
+    <script>
+        function updateBeginCount(theList) {
+            InventoryPlanningController.updateCounts( theList,
+                function(result, event) {
+                    refreshBeginCounts();
+                }, {escape:true});
+        }
+        function updateEndCount(theList) {
+            InventoryPlanningController.updateCounts( theList,
+                function(result, event) {
+                    refreshEndCounts();
+                }, {escape:true});
+        }
+    </script>
+    <GFERP:LoadingStatus />
+    <apex:form id="theForm">
+
+        <apex:outputPanel id="popinfo">
+            <!--Section for Pop Over Starts-->
+            <div class="modal fade" id="UserFieldModal" role="dialog">
+                <div class="modal-dialog modal-md">
+                    <div class="modal-content">
+                        <div class="modal-header modal-header-success">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h3 class="modal-title-success">
+                                <apex:outputText >Customer Inventory Counts</apex:outputText>
+                            </h3>
+                        </div>
+                        <div class="modal-body">
+                            <apex:outputPanel >
+                                <apex:pageBlock mode="{!IF((viewCICList.size != 0),'maindetail','detail')}">
+                                    <apex:pageBlockTable value="{!viewCICList}" var="count" rendered="{!(viewCICList.size != 0)}">
+                                        <apex:column headervalue="Name">
+                                            <apex:outputLink value="/{!count.id}" target="_blank">{!count.Name}</apex:outputLink>
+                                        </apex:column>
+                                        <apex:column value="{!count.Item_No__c}"/>
+                                        <apex:column value="{!count.Customer__c}"/>
+                                        <apex:column value="{!count.Week_End_Date__c}"/>
+                                        <apex:column headerValue="Count Qty.">
+                                            <apex:inputField value="{!count.Count_Qty__c}"/>
+                                        </apex:column>
+                                    </apex:pageBlockTable>
+                                    <apex:outputText rendered="{!(viewCICList.size = 0)}" value="No Records Found." style="font-size: 105%;"/>
+                                    <apex:pageBlockButtons >
+                                        <apex:commandButton value="Save" action="{!convertToString}" status="loadingstatus" reRender="theForm" onComplete="updateBeginCount('{!listString}')" rendered="{!viewType == 'beginCount'}"/>
+                                        <apex:commandButton value="Save" action="{!convertToString}" status="loadingstatus" reRender="theForm" onComplete="updateEndCount('{!listString}')" rendered="{!viewType == 'endCount'}"/>
+                                    </apex:pageBlockButtons>
+                                </apex:pageBlock>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </apex:outputPanel>
+
+        <apex:actionFunction name="refreshBeginCounts" action="{!refreshBeginCounts}" reRender="theSFLTable"/>
+        <apex:actionFunction name="refreshEndCounts" action="{!refreshEndCounts}" reRender="theSFLTable"/>
+
+        <apex:actionFunction name="viewBeginCounts" action="{!viewBeginCounts}" rerender="popinfo" status="loadingstatus" oncomplete="openmodal();">
+            <apex:param assignTo="{!viewItem}" name="ItemId" value=""/>
+        </apex:actionFunction>
+        <apex:actionFunction name="viewEndCounts" action="{!viewEndCounts}" rerender="popinfo" status="loadingstatus" oncomplete="openmodal();">
+            <apex:param assignTo="{!viewItem}" name="ItemId" value=""/>
+        </apex:actionFunction>
+
+        <apex:pageBlock title="Inventory Planning" id="thePageBlock">
+            <apex:pageMessages id="theMessage" escape="false"></apex:pageMessages>
+            <apex:pageBlockSection columns="1">
+                <apex:panelGrid columns="8" cellpadding="10">
+
+                    <apex:outputPanel >
+                        <b>Reporting Week : </b>
+                        <apex:inputField value="{!theDate.GFERP__Requested_Shipment_Date__c}">
+                            <apex:actionSupport event="onchange" action="{!filterOnLowWeeks}" reRender="theSFLTable, theMessage" status="loadingstatus"/>
+                        </apex:inputField>
+                    </apex:outputPanel>
+
+                    <apex:outputPanel id="selectCustomerPanel">
+                        <b>Customer : </b>
+                        <apex:selectList value="{!selectedCustomers}" multiselect="true" size="5">
+                            <apex:selectOptions value="{!customerOptions}"/>
+                            <apex:actionSupport event="onchange" action="{!selectCustomerRefreshTheReport}" reRender="theSFLTable, theMessage" status="loadingstatus"/>
+                        </apex:selectList>
+                    </apex:outputPanel>
+                    <apex:outputPanel style="white-space:nowrap;">
+                        <b>Item No. : </b>
+                        <apex:selectList size="1" value="{!selFilterOp}">
+                            <apex:selectOptions value="{!lstFilterOperator}"/>
+                        </apex:selectList>
+                        <apex:inputText value="{!itemNoInput}">
+                            <apex:actionSupport event="onchange" action="{!refreshTheReport}" reRender="theSFLTable, theMessage" status="loadingstatus"/>
+                        </apex:inputText>
+                    </apex:outputPanel>
+                    <apex:outputPanel >
+                        <b>Low Weeks : </b>
+                        <apex:selectList value="{!selectedLowWeek}" size="1">
+                            <apex:selectOptions value="{!LowWeekSelectOptions}"/>
+                            <apex:actionSupport event="onchange" action="{!filterOnLowWeeks}" reRender="theSFLTable, theMessage" status="loadingstatus"/>
+                        </apex:selectList>
+                    </apex:outputPanel>
+
+                    <apex:pageBlockTable value="{!lowWeeks}" var="linevoid" styleClass="guideTable">
+                        <apex:column headerValue="Low Weeks : " style="white-space: nowrap" headerClass="alignCenter"/>
+                        <apex:repeat value="{!lowWeeks}" var="line">
+                            <apex:column headerValue="{!line.theValue}" style="white-space: nowrap;" headerClass="alignCenter {!line.theStyle}"/>
+                        </apex:repeat>
+                    </apex:pageBlockTable>
+                    <apex:pageBlockTable value="{!varianceGuide}" var="linevoid" styleClass="guideTable">
+                        <apex:column headerValue="Variance Guide : " style="white-space: nowrap" headerClass="alignCenter"/>
+                        <apex:repeat value="{!varianceGuide}" var="line">
+                            <apex:column headerValue="{!line.theValue}" style="white-space: nowrap" headerClass="alignCenter {!line.theStyle}"/>
+                        </apex:repeat>
+                    </apex:pageBlockTable>
+
+                </apex:panelGrid>
+            </apex:pageBlockSection>
+
+            <apex:pageBlockTable id="theSFLTable" value="{!itemLineSublist}" var="itemLine" rendered="{!NOT(ISNULL(itemLineList))}" styleClass="lineTable">
+                <apex:column headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>Item No."/>
+                    </apex:facet>
+                    <a href="/{!itemLine.itemId}" target="_blank"><apex:outputText value="{!itemLine.itemNo}"/></a>
+                </apex:column>
+                <!--<apex:column headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>Description"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.itemDescription}"/>
+                </apex:column>-->
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>Begin Count<br/>(A)"/>
+                    </apex:facet>
+<!--                    <apex:outputLink value="/{!itemLine.beginCountId}" target="_blank" rendered="{!itemLine.beginCount != 0}">-->
+<!--                        <apex:outputText value="{!itemLine.beginCount}"/>-->
+<!--                    </apex:outputLink>-->
+                    <apex:outputLink onClick="getBeginCountDetail('{!itemLine.itemId}');return false;" rendered="{!itemLine.beginCount != 0}">
+                        <apex:outputText value="{!itemLine.beginCount}"/>
+                    </apex:outputLink>
+                    <apex:outputText value="{!itemLine.beginCount}" rendered="{!itemLine.beginCount == 0}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>End Count<br/>(B)"/>
+                    </apex:facet>
+<!--                    <apex:outputLink value="/{!itemLine.endCountId}" target="_blank" rendered="{!itemLine.endCount != 0}">-->
+<!--                        <apex:outputText value="{!itemLine.endCount}"/>-->
+<!--                    </apex:outputLink>-->
+                    <apex:outputLink onClick="getEndCountDetail('{!itemLine.itemId}');return false;" rendered="{!itemLine.endCount != 0}">
+                        <apex:outputText value="{!itemLine.endCount}"/>
+                    </apex:outputLink>
+                    <apex:outputText value="{!itemLine.endCount}" rendered="{!itemLine.endCount == 0}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>Transfer<br/>(T)"/>
+                    </apex:facet>
+                    <apex:outputLink value="/{!itemLine.transferQtyId}" target="_blank" rendered="{!itemLine.transferQty != null}">
+                        <apex:outputText value="{!itemLine.transferQty}"/>
+                    </apex:outputLink>
+                    <apex:outputText value="{!itemLine.transferQty}" rendered="{!OR(itemLine.transferQty == null)}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Shipped<br/>This Week<br/>(C)"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.shippedLastWeek}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Actual<br/>Week Usage<br/>(D: A-B+C-T)"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.actualWkUsage}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Average<br/>Week Usage<br/>(E)"/>
+                    </apex:facet>
+                    <apex:outputText value="{0, Number, #,##0.00}">
+                        <apex:param value="{!itemLine.averageWkUsage}"/>
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>% Variance<br/>((D-E) / E)"/>
+                    </apex:facet>
+                    <apex:outputText value="{0, number, 0%}" styleClass="{!itemLine.textColorClass}" >
+                        <apex:param value="{!itemLine.variancePct}"/>
+                    </apex:outputText>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Local<br/>On Hand"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.localOnHand}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>Local Weeks"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.localWeeks}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>Vendor Whse"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.vendorWhse}"/>
+                </apex:column>
+                <apex:column headerClass="alignCenter"
+                             styleClass="alignCenter {!if(itemLine.localAndVendorWksActual != null, if(itemLine.localAndVendorWksActual < 4.0, 'orangeBG', if(AND(itemLine.localAndVendorWksActual >= 4, itemLine.localAndVendorWksActual <= 12),'yellowBG','')), '')}">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Local and<br/>Vendor Weeks<br/>( actual )"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.localAndVendorWksActual}"/>
+                </apex:column>
+                <apex:column headerClass="alignCenter"
+                             styleClass="alignCenter {!if(itemLine.localAndVendorWksStandard != null, if(itemLine.localAndVendorWksStandard < 4.0, 'orangeBG', if(AND(itemLine.localAndVendorWksStandard >= 4, itemLine.localAndVendorWksStandard <= 12),'yellowBG','')), '')}">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Local and<br/>Vendor Weeks<br/>( average )"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.localAndVendorWksStandard}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Total<br/>On Hand"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.totalOnHand}"/>
+                </apex:column>
+                <apex:column styleClass="alignCenter" headerClass="alignCenter">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="<br/>On PO"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.onOrder}"/>
+                </apex:column>
+                <apex:column headerClass="alignCenter"
+                             styleClass="alignCenter {!if(itemLine.weeksAvailTotalAcutal != null, if(itemLine.weeksAvailTotalAcutal < 4.0, 'orangeBG', if(AND(itemLine.weeksAvailTotalAcutal >= 4, itemLine.weeksAvailTotalAcutal <= 12),'yellowBG','')), '')}">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Weeks<br/>Avail Total<br/>( actual )"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.weeksAvailTotalAcutal}"/>
+                </apex:column>
+                <apex:column headerClass="alignCenter"
+                             styleClass="alignCenter {!if(itemLine.weeksAvailTotalStandard != null, if(itemLine.weeksAvailTotalStandard < 4.0, 'orangeBG', if(AND(itemLine.weeksAvailTotalStandard >= 4, itemLine.weeksAvailTotalStandard <= 12),'yellowBG','')), '')}">
+                    <apex:facet name="header">
+                        <apex:outputText escape="false" value="Weeks<br/>Avail Total<br/>( average )"/>
+                    </apex:facet>
+                    <apex:outputText value="{!itemLine.weeksAvailTotalStandard}"/>
+                </apex:column>
+
+                <apex:facet name="footer">Showing {!fromCounter} to {!toCounter} of {!totalSize} lines</apex:facet>
+
+                <apex:facet name="header">
+                    <apex:outputPanel id="myButtons">
+
+                        <apex:outputLabel value="Per Page " for="perpagelist"/>
+                        <apex:selectList value="{!list_size}" size="1" id="perpagelist">
+                            <apex:selectOptions value="{!pageSizeSelectOptions}"/>
+                            <apex:actionSupport event="onchange" action="{!refreshTheSublist}" reRender="theSFLTable,myButtons" status="loadingstatus"/>
+                        </apex:selectList>
+
+                        <apex:outputLabel value="Sort By " for="sortbylist" style="margin-left:15px;"/>
+                        <apex:selectList value="{!sortExp}" size="1" id="sortbylist">
+                            <apex:selectOptions value="{!SortBySelectOptionsOptions}"/>
+                            <apex:actionSupport event="onchange" action="{!filterOnLowWeeks}" reRender="theSFLTable,myButtons" status="loadingstatus"/>
+                        </apex:selectList>
+
+                        <apex:commandLink action="{!filterOnLowWeeks}" title="Sort Direction" value="{!IF(sortDirection='ASC','▲','▼')}"
+                                          reRender="theSFLTable,myButtons" status="loadingstatus" id="sortDirection" style="margin-left:8px;text-decoration: none;font-size:14px;margin-right:15px;">
+                            <apex:param value="" name="sortDirection" assignTo="{!sortExpression}"></apex:param>
+                        </apex:commandLink>
+
+                        <apex:commandButton value="Export to Excel" action="{!ExportToExcel}" rerender="theForm"/>
+<!--                        <apex:inputText value="{!itemSearchKey}" html-placeholder="Search Item, Description" style="margin-left:20px;width:20%;" id="searchField">-->
+<!--                            <apex:actionSupport event="onchange" action="{!searchInTheList}" reRender="theSFLTable,myButtons" status="loadingstatus"/>-->
+<!--                        </apex:inputText>-->
+
+                        <apex:outputPanel style="float:right;">
+                            <apex:commandButton action="{!Beginning}" disabled="{!disablePrevious}" value="|<< First" status="loadingstatus" reRender="theSFLTable,myButtons"/>
+                            <apex:commandButton action="{!Previous}" disabled="{!disablePrevious}" value="<< Previous" status="loadingstatus" reRender="theSFLTable,myButtons"/>
+                            <apex:commandButton action="{!Next}" disabled="{!disableNext}" value="Next >>" status="loadingstatus" reRender="theSFLTable,myButtons"/>
+                            <apex:commandButton action="{!End}" disabled="{!disableNext}" value="Last >>|" status="loadingstatus" reRender="theSFLTable,myButtons"/>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:facet>
+            </apex:pageBlockTable>
+
+        </apex:pageBlock>
+
+    </apex:form>
+    <script>
+
+        function getBeginCountDetail(itemId) {
+            viewBeginCounts(itemId);
+        }
+        function getEndCountDetail(itemId) {
+            viewEndCounts(itemId);
+        }
+        function openmodal() {
+            // $('#UserFieldModal').modal('show');
+            var closeIcon = document.getElementsByClassName("close")[0];
+            var modal = document.getElementById("UserFieldModal");
+            modal.style.display = "block";
+            closeIcon.onclick = function () {
+                modal.style.display = "none";
+            }
+        }
+
+    </script>
+</apex:page>

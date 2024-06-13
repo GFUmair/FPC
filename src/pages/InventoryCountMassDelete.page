@@ -1,0 +1,16 @@
+<apex:page recordSetVar="" standardController="Customer_Inventory_Count__c" extensions="CustomerInventoryCountController" lightningStylesheets="true">
+    <GFERP:LoadingStatus />
+    <apex:sectionHeader title="Mass Delete Customer Inventory Counts"/>
+    <apex:form id="theForm">
+        <apex:pageBlock id="thePageBlock" >
+            <apex:outputPanel >
+                <apex:pageMessage severity="info" title="Are you sure to delete {!selectedCount} Customer Inventory Count(s)?"/>
+            </apex:outputPanel>
+            <apex:pageMessages id="theMessage"></apex:pageMessages>
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton status="loadingstatus" action="{!massDelete}" rerender="thePageBlock" value="Mass Delete" />
+                <apex:commandButton value="Return" action="{!returnBack}" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
